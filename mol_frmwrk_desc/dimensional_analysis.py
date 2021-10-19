@@ -12,25 +12,26 @@ import sys
 from itertools import combinations, chain
 from scipy.special import comb
 
-#%%
 '''
 Functions and Subroutines
 '''
 
-def equal_ignore_order(a, b):
-    unmatched = b
-    
-    print(a,b)
+def check_duplicates(x,list_):
+    for li in list_:
+        if compare(x,li):
+            return True
+   
 
-    for element in a:
-        try:
-            unmatched.remove(element)
-        except ValueError:
-            return False
-    return not unmatched
+def compare(s, t):
+    t = list(t)   # make a mutable copy
+    try:
+        for elem in s:
+            t.remove(elem)
+    except ValueError:
+        return False
+    return not t
 
 def roll_arr(var_names_, var_sym_, var_dim_, roll):
-    
     var_dim_col_list = []
     for col in var_dim_.T:
         var_dim_col_list.append(np.roll(col,roll))
@@ -62,7 +63,6 @@ def find_lone_var(sol_):
 
 
 def pretty_output(sol_,vars_):
-
     tot_var_list_ = []
     for set_ in sol_:
         str_list = []
@@ -83,7 +83,7 @@ def pretty_output(sol_,vars_):
     
 def find_dimensionless(var_dim_,var_sym_):
     #Convert numpy array from str to float
-    var_dim_ = var_dim_.astype(np.float)
+    var_dim_ = var_dim_.astype(float)
     
     #Define coefficient numpy array.
     A_np = var_dim_.T#transpose
@@ -127,7 +127,8 @@ if __name__ == "__main__":
     # such that the final element goes in front.) This is necessary to find
     # exhuastive list of dimensionless quantities.
     
-    unique_vars_list = []
+    vars_list = []
+    output_str_list = []
     for iter_ in range(len(var_sym)):
         
         var_names_tmp, var_sym_tmp, var_dim_tmp = roll_arr(var_names,var_sym,var_dim,iter_)
@@ -153,34 +154,37 @@ if __name__ == "__main__":
         idx = comb_index(len(lone_chars), 1)
         
         #Substitute list of values for variables.
-        print("Variables:")
-        print(var_sym_tmp)
-        print()
-        print("Dimensionless Quantities:\n")
+        #print("Variables:")
+        #print(var_sym_tmp)
+        #print()
+        #print("Dimensionless Quantities:\n")
         
-        #for i in range(len(lone_chars)):
-            #vals = np.zeros(len(lone_chars))
-            #vals[i] = 1
-    
-    
+        #Collect Data
         for pair in idx:
             vals = np.zeros(len(lone_chars))
             
             for element in pair:
                 vals[element] = 1
-            subbed_sol_sympy = sol_sympy.subs((list(zip(lone_chars,vals))))
-            tot_vars_list, output_str = pretty_output(subbed_sol_sympy,var_sym_tmp)
-            
+                subbed_sol_sympy = sol_sympy.subs((list(zip(lone_chars,vals))))
+                tmp_vars_list, output_str = pretty_output(subbed_sol_sympy,var_sym_tmp)
 
-            
-            
-            #print(equal_ignore_order(tot_vars_list,unique_vars_list))
-            if not tot_vars_list in unique_vars_list:
-                unique_vars_list.append(tot_vars_list)
-                print(output_str)
-             
-            
-    #print(unique_vars_list)
+                if not tmp_vars_list in vars_list:
+                    vars_list.append(tmp_vars_list)
+                    output_str_list.append(output_str)
+                    #print(tmp_vars_list)
+                    #print(output_str_list[-1])
+
+    #Here we want to remove reciprocal duplicates, such as V/Vo and Vo/V.
+    duplicates_list = []
+    for i,var in enumerate(vars_list):
+        if check_duplicates(var[0],duplicates_list):
+            continue
+        else:
+            duplicates_list.append(var[0])
+            print(output_str_list[i])    
+    
+
+
             
             
 
