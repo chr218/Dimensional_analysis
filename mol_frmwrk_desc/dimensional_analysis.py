@@ -4,12 +4,14 @@ Created on Fri Oct 15 00:48:20 2021
 
 @author: cvr52
 """
+
 import numpy as np
 import pandas as pd
 import sympy
 import sys
 
 from itertools import combinations, chain
+from fractions import Fraction
 from scipy.special import comb
 
 '''
@@ -62,7 +64,7 @@ def find_lone_var(sol_):
     return chars_list
 
 
-def pretty_output(sol_,vars_):
+def pretty_output(sol_,vars_,frac_out):
     tot_var_list_ = []
     for set_ in sol_:
         str_list = []
@@ -70,8 +72,11 @@ def pretty_output(sol_,vars_):
         for i,arg_ in enumerate(set_):
             if not arg_ == 0:
                 
-                SUP = str.maketrans("0123456789", "⁰¹²³⁴⁵⁶⁷⁸⁹")
-                str_list.append((vars_[i]+str(round(arg_))).translate(SUP))
+                SUP = str.maketrans("0123456789/", "⁰¹²³⁴⁵⁶⁷⁸⁹ᐟ")
+                if frac_out:
+                    str_list.append((vars_[i]+str(Fraction(float(arg_)).limit_denominator())).translate(SUP))
+                else:
+                    str_list.append((vars_[i]+str(float(arg_))).translate(SUP))
                 var_list_.append(vars_[i])
                 
         tot_var_list_.append(var_list_)
@@ -111,7 +116,7 @@ if __name__ == "__main__":
     '''
     
     
-    df = pd.read_excel('input_Greenberg.xlsx')
+    df = pd.read_excel('input_test.xlsx')
     cols = df.columns
     df_arr = df.to_numpy(dtype=str, copy=False)
     
@@ -166,7 +171,7 @@ if __name__ == "__main__":
             for element in pair:
                 vals[element] = 1
                 subbed_sol_sympy = sol_sympy.subs((list(zip(lone_chars,vals))))
-                tmp_vars_list, output_str = pretty_output(subbed_sol_sympy,var_sym_tmp)
+                tmp_vars_list, output_str = pretty_output(subbed_sol_sympy,var_sym_tmp,frac_out=True)
 
                 if not tmp_vars_list in vars_list:
                     vars_list.append(tmp_vars_list)
