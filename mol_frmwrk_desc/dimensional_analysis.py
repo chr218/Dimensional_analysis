@@ -92,6 +92,10 @@ def find_dimensionless(var_dim_,var_sym_):
     
     #Define coefficient numpy array.
     A_np = var_dim_.T#transpose
+    A_rank = np.linalg.matrix_rank(A_np)
+    print('Matrix Rank: ',A_rank)
+    print('Number of columns of A: ',len(A_np[0,:]))
+    print('Number of linearly independent vectors: ',len(A_np[0,:])-A_rank)
     
     #Convert to sympy matrix
     A_sympy = sympy.Matrix(A_np)
@@ -134,7 +138,8 @@ if __name__ == "__main__":
     
     vars_list = []
     output_str_list = []
-    for iter_ in range(len(var_sym)):
+    #for iter_ in range(len(var_sym)): #Uncomment this to show linear combinations of solutions.
+    for iter_ in range(1):
         
         var_names_tmp, var_sym_tmp, var_dim_tmp = roll_arr(var_names,var_sym,var_dim,iter_)
     
